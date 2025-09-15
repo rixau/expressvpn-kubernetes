@@ -33,11 +33,11 @@ fi
 echo "🔍 VPN interface IP: $VPN_INTERFACE_IP"
 
 # For now, just validate that tun0 interface exists and has an IP
-# The actual external IP check will be done by the Prefect flow
+# The actual external IP check will be done by your application
 echo "🌐 Basic VPN validation - checking tun0 interface..."
 if [ -n "$VPN_INTERFACE_IP" ]; then
     echo "✅ VPN validation successful - tun0 interface active with IP: $VPN_INTERFACE_IP"
-    echo "📝 Note: External IP routing will be validated by Prefect flows"
+    echo "📝 Note: External IP routing will be validated by your application"
     exit 0
 else
     echo "❌ ERROR: tun0 interface has no IP address"

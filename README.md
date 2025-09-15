@@ -4,12 +4,37 @@ A production-ready ExpressVPN sidecar container for Kubernetes that provides VPN
 
 ## 🎯 Features
 
-- **🔒 Secure VPN Integration**: Seamlessly add ExpressVPN to any Kubernetes pod
-- **🚀 Fail-Fast Behavior**: Pod fails if VPN connection cannot be established
+- **🔒 Secure VPN Integration**: Seamlessly add ExpressVPN to any Kubernetes pod or Docker container
+- **🚀 Fail-Fast Behavior**: Container fails if VPN connection cannot be established
 - **🔄 Auto-Reconnection**: Automatically reconnects if VPN connection drops
-- **🌐 Environment Detection**: Works in both Kubernetes and Docker Compose
-- **📊 Health Monitoring**: Continuous VPN connection monitoring
+- **🌐 Environment Detection**: Works in both Kubernetes and Docker Compose environments
+- **📊 Health Monitoring**: Continuous VPN connection monitoring and validation
 - **🛡️ Network Isolation**: Proper routing for internal vs external traffic
+
+## 🧪 Quick Test
+
+Test the ExpressVPN sidecar locally with Docker Compose:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/rixau/expressvpn-kubernetes.git
+cd expressvpn-kubernetes
+
+# 2. Set up credentials
+cp env.example .env
+# Edit .env with your ExpressVPN credentials
+
+# 3. Add your ExpressVPN config
+# Download your .ovpn file and save it as ovpn/config.ovpn
+
+# 4. Test the VPN
+docker compose up
+
+# 5. Check the results
+# - Watch the logs for VPN connection status
+# - Visit http://localhost to see the IP test page
+# - Check docker logs ip-test-app for detailed IP verification
+```
 
 ## 🚀 Quick Start
 

@@ -1,0 +1,69 @@
+
+services:
+  # ExpressVPN sidecar
+  expressvpn-sidecar:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: expressvpn-sidecar
+    environment:
+      - VPN_USERNAME=${VPN_USERNAME}
+      - VPN_PASSWORD=${VPN_PASSWORD}
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    privileged: true
+    volumes:
+      - ./ovpn:/etc/openvpn:ro
+    networks:
+      - test-network
+
+  # Test application that checks IP to verify VPN
+  ip-test-app:
+    image: curlimages/curl:latest
+    container_name: ip-test-app
+    # Share network namespace with VPN sidecar
+    network_mode: "container:expressvpn-sidecar"
+    depends_on:
+      - expressvpn-sidecar
+    command: >
+      sh -c "
+      echo '🔍 Testing VPN functionality...' &&
+      echo '⏳ Waiting for VPN to be ready...' &&
+      sleep 30 &&
+      echo '🌐 Checking external IP...' &&
+      curl -s --max-time 15 https://httpbin.org/ip | grep -o '\"origin\": \"[^\"]*\"' | cut -d'\"' -f4 > /tmp/current_ip.txt &&
+      CURRENT_IP=\$(cat /tmp/current_ip.txt) &&
+      echo \"📍 Current external IP: \$CURRENT_IP\" &&
+      if [ \"\$CURRENT_IP\" != \"67.167.152.234\" ]; then
+        echo \"✅ VPN WORKING - Using VPN IP: \$CURRENT_IP\" &&
+        echo \"🎉 SUCCESS: Traffic is routing through ExpressVPN!\"
+      else
+        echo \"❌ VPN NOT WORKING - Still using real IP: \$CURRENT_IP\" &&
+        echo \"🚨 FAILURE: Traffic is not routing through VPN\"
+      fi &&
+      echo '🔄 Continuous monitoring...' &&
+      while true; do
+        sleep 60
+        NEW_IP=\$(curl -s --max-time 10 https://httpbin.org/ip | grep -o '\"origin\": \"[^\"]*\"' | cut -d'\"' -f4)
+        echo \"\$(date): External IP: \$NEW_IP\"
+      done
+      "
+
+  # Simple web server for additional testing
+  test-web:
+    image: nginx:alpine
+    container_name: test-web
+    # Share network namespace with VPN sidecar
+    network_mode: "container:expressvpn-sidecar"
+    depends_on:
+      - expressvpn-sidecar
+    ports:
+      - "8080:80"  # Access via http://localhost:8080
+    volumes:
+      - ./test-index.html:/usr/share/nginx/html/index.html:ro
+
+networks:
+  test-network:
+    driver: bridge
