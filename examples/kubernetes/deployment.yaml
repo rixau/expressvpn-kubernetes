@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-with-expressvpn
+  labels:
+    app: app-with-expressvpn
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-with-expressvpn
+  template:
+    metadata:
+      labels:
+        app: app-with-expressvpn
+    spec:
+      # Optional: Use image pull secrets for private registries
+      # imagePullSecrets:
+      # - name: ghcr-auth
+      
+      # Optional: Node selector for VPN-enabled nodes
+      # nodeSelector:
+      #   vpn-enabled: "true"
+      
+      # Network configuration for VPN functionality
+      shareProcessNamespace: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      
+      containers:
+      # Your main application container
+      - name: app
+        image: nginx:latest  # Replace with your application image
+        # Your application configuration here
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+      
+      # ExpressVPN sidecar container
+      - name: expressvpn-sidecar
+        image: ghcr.io/rixau/expressvpn-kubernetes:latest
+        env:
+        - name: VPN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: expressvpn-credentials
+              key: username
+        - name: VPN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: expressvpn-credentials
+              key: password
+        securityContext:
+          capabilities:
+            add:
+              - "NET_ADMIN"
+          privileged: true
+        volumeMounts:
+        - name: tun-device
+          mountPath: /dev/net/tun
+        - name: expressvpn-config
+          mountPath: /etc/openvpn
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+      
+      volumes:
+      - name: expressvpn-config
+        configMap:
+          name: expressvpn-config
+      - name: tun-device
+        hostPath:
+          path: /dev/net/tun

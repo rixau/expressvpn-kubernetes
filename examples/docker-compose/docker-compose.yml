@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # ExpressVPN sidecar
+  expressvpn-sidecar:
+    build:
+      context: ../../
+      dockerfile: docker/Dockerfile
+    container_name: expressvpn-sidecar
+    environment:
+      - VPN_USERNAME=${VPN_USERNAME}  # Set in .env file
+      - VPN_PASSWORD=${VPN_PASSWORD}  # Set in .env file
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    privileged: true
+    volumes:
+      - ./config.ovpn:/etc/openvpn/config.ovpn:ro
+    networks:
+      - app-network
+
+  # Example application that uses the VPN
+  app:
+    image: nginx:latest  # Replace with your application
+    container_name: app-with-vpn
+    # Share network namespace with VPN sidecar
+    network_mode: "container:expressvpn-sidecar"
+    depends_on:
+      - expressvpn-sidecar
+    # Add your application configuration here
+
+networks:
+  app-network:
+    driver: bridge

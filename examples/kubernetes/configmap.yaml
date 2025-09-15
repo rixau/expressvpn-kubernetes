@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: expressvpn-config
+  namespace: default  # Change to your namespace
+data:
+  config.ovpn: |
+    # Replace this with your actual ExpressVPN configuration
+    # Download from: https://www.expressvpn.com/setup#manual
+    # 
+    # Example structure:
+    # dev tun
+    # fast-io
+    # persist-key
+    # persist-tun
+    # nobind
+    # remote your-server.expressnetw.com 1195
+    # remote-random
+    # pull
+    # comp-lzo no
+    # tls-client
+    # verify-x509-name Server name-prefix
+    # ns-cert-type server
+    # key-direction 1
+    # route-method exe
+    # route-delay 2
+    # tun-mtu 1500
+    # fragment 1300
+    # mssfix 1200
+    # verb 3
+    # cipher AES-256-GCM
+    # auth SHA512
+    # sndbuf 524288
+    # rcvbuf 524288
+    # auth-user-pass
+    # 
+    # <cert>
+    # -----BEGIN CERTIFICATE-----
+    # ... your certificate ...
+    # -----END CERTIFICATE-----
+    # </cert>
+    # 
+    # <key>
+    # -----BEGIN RSA PRIVATE KEY-----
+    # ... your private key ...
+    # -----END RSA PRIVATE KEY-----
+    # </key>
+    # 
+    # <tls-auth>
+    # -----BEGIN OpenVPN Static key V1-----
+    # ... your tls-auth key ...
+    # -----END OpenVPN Static key V1-----
+    # </tls-auth>
+    # 
+    # <ca>
+    # -----BEGIN CERTIFICATE-----
+    # ... your CA certificate ...
+    # -----END CERTIFICATE-----
+    # </ca>
+    
+    # PLACEHOLDER - Replace with your actual ExpressVPN .ovpn file content
+    dev tun
+    nobind
+    persist-key
+    persist-tun
